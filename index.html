@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Заметки с удалением</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<textarea id="noteInput" rows="4" cols="40" placeholder="Введите заметку..."></textarea><br />
+<button id="saveBtn">Сохранить</button>
+<button id="showBtn">Показать заметки</button>
+
+<div id="notesList"></div>
+
+<style>
+  body { font-family: Arial, sans-serif; max-width: 400px; margin: 20px auto; }
+  #notesList { margin-top: 15px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  button.deleteBtn {
+    margin-left: 10px;
+    color: white;
+    background-color: #d9534f;
+    border: none;
+    padding: 2px 8px;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  button.deleteBtn:hover {
+    background-color: #c9302c;
+  }
+</style>
+
+
+<script>
+  const noteInput = document.getElementById('noteInput');
+  const saveBtn = document.getElementById('saveBtn');
+  const showBtn = document.getElementById('showBtn');
+  const notesList = document.getElementById('notesList');
+  const STORAGE_KEY = 'notes';
+
+  // Сохранить новую заметку
+  saveBtn.addEventListener('click', () => {
+    const newNote = noteInput.value.trim();
+    if (!newNote) return; // игнорируем пустые заметки
+
+    let notes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    notes.push(newNote);
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    noteInput.value = '';
+  });
+
+  // Показать все заметки
+  showBtn.addEventListener('click', () => {
+    renderNotes();
+  });
+
+  function renderNotes() {
+    notesList.innerHTML = '';
+    const notes = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!notes || notes.length === 0) {
+      notesList.textContent = 'Нет сохранённых заметок';
+      return;
+    }
+
+    const ul = document.createElement('ul');
+    notes.forEach((note, index) => {
+      const li = document.createElement('li');
+      li.textContent = note;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Удалить';
+      deleteBtn.className = 'deleteBtn';
+      deleteBtn.addEventListener('click', () => {
+        deleteNote(index);
+      });
+
+      li.appendChild(deleteBtn);
+      ul.appendChild(li);
+    });
+    notesList.appendChild(ul);
+  }
+
+  // Удалить заметку по индексу
+  function deleteNote(index) {
+    let notes = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!notes || !notes[index]) return;
+
+    notes.splice(index, 1);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    renderNotes();
+  }
+
+  // При загрузке страницы можно автоматически показать заметки, если нужно
+  // window.addEventListener('load', renderNotes);
+</script>
+</body>
+</html>
